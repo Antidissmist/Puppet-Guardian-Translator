@@ -5,6 +5,7 @@
 // @description  Translates text inside the game Puppet Guardian
 // @author       Antidissmist
 // @homepage     https://github.com/Antidissmist/Puppet-Guardian-Translator
+// @source       https://github.com/Antidissmist/Puppet-Guardian-Translator
 // @match        https://artifact.jp/guardian/login.php
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=artifact.jp
 // @downloadURL  https://raw.githubusercontent.com/Antidissmist/Puppet-Guardian-Translator/refs/heads/main/userscript.js
