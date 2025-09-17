@@ -14,7 +14,8 @@
 // @grant        GM.getValue
 // @grant        GM.setValue
 // @grant        GM_xmlhttpRequest
-// @connect      https://raw.githubusercontent.com/Antidissmist/Puppet-Guardian-Translator
+// @connect      https://raw.githubusercontent.com/Antidissmist/Puppet-Guardian-Translator/*
+// @connect      https://raw.githubusercontent.com/Antidissmist/Puppet-Guardian-Translator/refs/heads/main/data/translations.json
 // ==/UserScript==
 
 const sourceLanguageCode = "ja";
