@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Puppet Guardian Translator
 // @namespace    http://tampermonkey.net/
-// @version      2025-09-17
+// @version      1.0.1
 // @description  Translates text inside the game Puppet Guardian
 // @author       Antidissmist
 // @homepage     https://github.com/Antidissmist/Puppet-Guardian-Translator
@@ -14,8 +14,7 @@
 // @grant        GM.getValue
 // @grant        GM.setValue
 // @grant        GM_xmlhttpRequest
-// @connect      https://raw.githubusercontent.com/Antidissmist/Puppet-Guardian-Translator/*
-// @connect      https://raw.githubusercontent.com/Antidissmist/Puppet-Guardian-Translator/refs/heads/main/data/translations.json
+// @connect      raw.githubusercontent.com
 // ==/UserScript==
 
 const sourceLanguageCode = "ja";
@@ -101,7 +100,7 @@ function trs_init() {
     if (data.translation_data) {
         translation_mapper.load(data.translation_data);
     }
-    gTranslateAPIKey = data.gtranslate_api_key;
+    gTranslateAPIKey = data.gtranslate_api_key ?? "";
     if (data.config_saved) {
         config_saved = data.config_saved;
     }
@@ -1034,6 +1033,7 @@ function trs_config_init() {
         
         const reverse_code = TranslationCode.get_reverse_code(translationCodeDefault); //en->ja
         const langmap = translation_mapper.get_language_map(reverse_code);
+        if (!langmap) return; //no language map
         const allmappings = langmap.get_all_mappings();
         
         //filter keys containing value
