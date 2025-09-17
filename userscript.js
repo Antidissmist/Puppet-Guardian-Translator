@@ -1013,9 +1013,7 @@ function trs_config_init() {
     config_window_element.innerHTML = htmlstr;
 
     config_tsearch_box = config_window_element.querySelector(".trs_search_results_box");
-    _elem_on_checked("#trs_log_context",(val) => global_config.log_context = val);
-    _elem_on_checked("#trs_log_unknown",(val) => global_config.log_unknown_context = val);
-    _elem_on_checked("#trs_log_names",(val) => global_config.log_exclude_names = val);
+
     _elem_on_checked("#trs_add_chat_marker",(val) => config_saved.add_chat_marker = val);
     _elem_on_input("#trs_apikey",(val)=>{
         gTranslateAPIKey = val;
@@ -1052,13 +1050,19 @@ function trs_config_init() {
             config_tsearch_box.appendChild(entry);
         }
     });
-    _elem_on_click("#trs_log_elements",()=>{
-        text_elements.forEach(elem=>{
-            console.log(`element text, stack:`);
-            console.log(elem.element_ref.text);
-            console.log(elem.context_stack);
+
+    if (DEBUG) {
+        _elem_on_checked("#trs_log_context",(val) => global_config.log_context = val);
+        _elem_on_checked("#trs_log_unknown",(val) => global_config.log_unknown_context = val);
+        _elem_on_checked("#trs_log_names",(val) => global_config.log_exclude_names = val);
+        _elem_on_click("#trs_log_elements",()=>{
+            text_elements.forEach(elem=>{
+                console.log(`element text, stack:`);
+                console.log(elem.element_ref.text);
+                console.log(elem.context_stack);
+            });
         });
-    });
+    }
 
 }
 
