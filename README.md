@@ -2,8 +2,6 @@
 
 A Tampermonkey userscript that translates Japanese text inside the game Puppet Guardian!
 
-(this guide is a work in progress, since I have to make it public on Github in order to test it out :P)
-
 ## Features
 - Automatically finds Japanese text and quickly translates it into English as you play!
 - Caches important text and item names, so most text you've seen before will be seamlessly replaced.
