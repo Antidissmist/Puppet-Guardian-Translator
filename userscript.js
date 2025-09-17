@@ -27,6 +27,7 @@ let text_elements = [];
 let text_listeners = {}; //{ <text>: [callbacks...] } for text we are awaiting translation
 
 
+const DEBUG = false;
 let global_config = {
     log_context: false,
     log_exclude_names: false,
@@ -77,7 +78,10 @@ const number_replacements = [ "▘", "▚" ];
 function trs_log(str) {
     console.log(`🌐 ${str}`);
 }
-///setup everything (called below)
+
+/**
+ * @desc set up everything
+ */
 function trs_init() {
 
     translationCodeDefault = new TranslationCode(sourceLanguageCode,targetLanguageCode); //ja->en
@@ -112,6 +116,9 @@ function trs_init() {
     const interval_check = setInterval(trs_check_all,1000); //every second
 }
 
+/**
+ * @desc Updates our local translation cache from the public one stored on Github
+ */
 function trs_check_public_cache() {
 
     GM_xmlhttpRequest({
@@ -153,7 +160,7 @@ function trs_check_public_cache() {
 
 /**
  * @desc loads our persistent data from the tampermonkey storage
- * @returns loaded data
+ * @returns {?Object} loaded data
  */
 function trs_load() {
     let obj = GM_getValue("_translated_data",null);
@@ -163,8 +170,9 @@ function trs_load() {
     }
     return obj;
 }
+
 /**
- * @desc saves our persistent data to the tampermonkey storage
+ * @desc saves all our persistent data to the tampermonkey storage
  */
 function trs_save() {
     global_data_object.translation_data = translation_mapper.save();
@@ -175,6 +183,8 @@ function trs_save() {
  * @desc update an entry with translated text
  * @param {string} key
  * @param {string} text
+ * @param {string} text_type
+ * @param {TranslationCode} translation_code
  */
 function trs_update_translation(key,text,type=textTypeDefault,translationcode=translationCodeDefault) {
     if (type==TextTypes.TEMPORARY) return;
@@ -183,6 +193,13 @@ function trs_update_translation(key,text,type=textTypeDefault,translationcode=tr
         trs_save();
     }
 }
+
+/**
+ * @desc returns whether the type of text should be saved
+ * @param {string} text_type 
+ * @param {TranslationCode} translationcode 
+ * @returns {boolean}
+ */
 function trs_text_type_is_saved(type,translationcode=translationCodeDefault) {
     switch(type) {
         case TextTypes.TEMPORARY:
@@ -192,11 +209,12 @@ function trs_text_type_is_saved(type,translationcode=translationCodeDefault) {
             return true;
     }
 }
+
 /**
  * @desc gets stored text. returns key if not translated
  * @param {string} key
- * @param translation_code
- * @param overwrite_type if provided a saveable text type, it will ensure the cached text is saved
+ * @param {TranslationCode} translation_code
+ * @param {?string} overwrite_type if provided a saveable text type, it will ensure the cached text is saved
  * @returns {string}
  */
 function trs_get(key,translation_code=translationCodeDefault,overwrite_type=null) {
@@ -204,10 +222,9 @@ function trs_get(key,translation_code=translationCodeDefault,overwrite_type=null
 }
 
 /**
- * @desc checks all tracked text elements
+ * @desc checks all tracked text elements (doesn't really do anything useful)
  */
 function trs_check_all() {
-
     text_elements.forEach((str,index,object)=>{
         let text_elem = str.element_ref;//.deref();
 
@@ -217,11 +234,14 @@ function trs_check_all() {
             return;
         }
 
-        //trs_check_element(str);
+        //trs_check_element(str); //not necessary anymore
     });
-
 }
 
+/**
+ * @desc reads initial text and splits it into pieces
+ * @param {TextTracker} elem_tracker 
+ */
 function trs_text_tracker_init(elem_tracker) {
 
     const text_elem = elem_tracker.element_ref;
@@ -242,12 +262,11 @@ function trs_text_tracker_init(elem_tracker) {
         //split string into recognized & translatable parts
         elem_tracker.text_pieces = trs_replace_context(text_key,elem_tracker.context_stack);
     }
-
 }
 
 /**
- * @desc checks that an element can be translated, and requests translation if able.
- * @param {Object} elem_tracker the object referencing the text element
+ * @desc Translates parts of a text element, and replaces the final text when done
+ * @param {TextTracker} elem_tracker the object referencing the text element
  */
 function trs_check_element(elem_tracker) {
 
@@ -264,8 +283,6 @@ function trs_check_element(elem_tracker) {
         if (!piece.needs_translation()) return; //nothing to do
 
         let text = piece.text;
-        //ensure text is recorded
-        //trs_add_entry(text,text_type);
         //get recorded text (if missing, value unchanged)
         text = trs_get(text,translationCodeDefault,text_type);
 
@@ -293,8 +310,8 @@ function trs_check_element(elem_tracker) {
 }
 
 /**
- * @desc applies the final edited/translated text to the text element
- * @param {Object} elem_tracker 
+ * @desc Applies the final edited/translated text to the text element. (puts numbers, prefix & postfix back in)
+ * @param {TextTracker} elem_tracker 
  */
 function trs_apply_final_text(elem_tracker) {
     const text_elem = elem_tracker.element_ref;
@@ -303,7 +320,7 @@ function trs_apply_final_text(elem_tracker) {
 }
 
 /**
- * @desc puts numbers, prefix & postfix back in
+ * @desc Puts numbers, prefix & postfix back into a translated string
  * @param {string} text_translated
  * @param {Object} text_info
  */
@@ -323,8 +340,8 @@ function trs_make_final_text(text_translated,text_info) {
 }
 
 /**
- * @desc gets the stripped-down text of the element
- * @param {Object} elem_tracker 
+ * @desc Gets the stripped-down "key" version of the text, taking out the numbers, prefix & postfix
+ * @param {string} text 
  */
 function trs_element_initial_read_text(text) {
 
@@ -367,7 +384,10 @@ function trs_element_initial_read_text(text) {
 }
 
 /**
- * @desc requests a translation if needed, and otherwise adds a listener
+ * @desc Requests a translation if needed, and otherwise adds a listener
+ * @param {string} text
+ * @param {Function} on_translation_response
+ * @param {TranslationCode} translation_code
  */
 function trs_await_translation(text,on_translation_response,translation_code=translationCodeDefault) {
 
@@ -390,9 +410,9 @@ function trs_await_translation(text,on_translation_response,translation_code=tra
 }
 
 /**
- * @desc sends a request to google translate
- * @param {string} text_jp
- * @param {function} onreceive to be called when the translated text is returned
+ * @desc Requests the source text to be translated, and calls the listeners when completed.
+ * @param {string} text_source
+ * @param {TranslationCode} translation_code
  */
 function trs_request_translation(text_source,translation_code=translationCodeDefault) {
 
@@ -482,6 +502,7 @@ function trs_string_contains_jp(str) {
 
     return regex_jp.test(str);
 }
+
 /**
  * @desc whether the text contains meaningful non-empty characters that can be translated
  * @param {string} str
@@ -500,9 +521,12 @@ function trs_string_is_empty(str) {
 }
 
 /**
- * @desc makes known replacements to an un-translated string, given its calling context
+ * @desc Makes known replacements to an un-translated string, given its calling context. 
+ * This fixes some duplicate translations. 
+ * Returns an array of pieces that can be translated separately.
  * @param {string} str 
- * @param {string} context
+ * @param {string} context_string
+ * @param {TextPiece[]}
  */
 function trs_replace_context(str,context) {
 
@@ -574,10 +598,8 @@ function trs_replace_context(str,context) {
     });
 }
 
-
-
 /**
- * @desc makes a text popup, using the built in notifications (awesome)
+ * @desc Makes a text popup, using the built in notifications (awesome)
  * @param {string} text 
  */
 function trs_popup_text(text) {
@@ -673,6 +695,8 @@ function trs_styles_init() {
 
 /**
  * @desc updates the translation button to the text input's position
+ * @param {Element} button_element
+ * @param {Element} input_element
  */
 function trs_transbutton_position(button,input) {
     let parentpos = input.parentNode.getBoundingClientRect();
@@ -689,11 +713,14 @@ function trs_transbutton_position(button,input) {
     const is_chat_style = input.style["background-color"]=="transparent";
     button.classList.remove("trs_inv_button","trs_chat_button");
     button.classList.add(is_chat_style ? "trs_chat_button" : "trs_inv_button");
-
 }
 
 /**
  * @desc gets or requests the translated string, and calls the callback
+ * @param {function} in_string_getter returns the value of the input string. if it changes, the callback will not be called.
+ * @param {string} text_type
+ * @param {TranslationCode} translation_code
+ * @param {function} callback called when the value is returned
  */
 function trs_get_translation_value(in_string_getter,text_type,translation_code,callback) {
     //check empty string
@@ -725,6 +752,7 @@ function trs_get_translation_value(in_string_getter,text_type,translation_code,c
 
 /**
  * @desc adds a translation button to a text input element
+ * @param {Element} input_element
  */
 function trs_track_text_input(input_elem) {
     //all inputs should have this attribute so we can easily tell if its in the game or on the page
@@ -781,6 +809,7 @@ function trs_track_text_input(input_elem) {
 
 /**
  * @desc tracks the chat dropdown in order to translate it
+ * @param {Element} select_elem
  */
 function trs_track_chat_select(select_elem) {
 
@@ -808,6 +837,7 @@ function trs_track_chat_select(select_elem) {
 
 /**
  * @desc tracks the chat history in order to translate it
+ * @param {Element} chat_div
  */
 function trs_track_chat_history(div) {
 
@@ -903,7 +933,7 @@ function trs_input_translators_init() {
 }
 
 /**
- * @desc creates a menu for configuring the script
+ * @desc creates an HTML menu for configuring the script
  */
 function trs_config_init() {
 
@@ -941,7 +971,7 @@ function trs_config_init() {
         };
     };
 
-    config_window_element.innerHTML = `
+    let htmlstr = `
     <details>
         <summary>Config</summary>
 
@@ -962,18 +992,25 @@ function trs_config_init() {
 
         <a href="https://artifact.jp/guardian/item/item.php" target="_blank">Item Guidebook</a>
     </details>
-
-    <details>
-        <summary>Debugging</summary>
-
-        ${_elem_check("Log context","trs_log_context")}
-        ${_elem_check("Log unknown context","trs_log_unknown")}
-        ${_elem_check("Exclude NameLabel","trs_log_names")}
-
-        <button id="trs_log_elements">Log all elements</button>
-
-    </details>
     `;
+    
+    //debugging options
+    if (DEBUG) {
+        htmlstr += `
+        <details>
+            <summary>Debugging</summary>
+
+            ${_elem_check("Log context","trs_log_context")}
+            ${_elem_check("Log unknown context","trs_log_unknown")}
+            ${_elem_check("Exclude NameLabel","trs_log_names")}
+
+            <button id="trs_log_elements">Log all elements</button>
+
+        </details>
+        `;
+    }
+
+    config_window_element.innerHTML = htmlstr;
 
     config_tsearch_box = config_window_element.querySelector(".trs_search_results_box");
     _elem_on_checked("#trs_log_context",(val) => global_config.log_context = val);
@@ -1026,6 +1063,10 @@ function trs_config_init() {
 }
 
 
+/**
+ * A tracker for a piece of text. 
+ * It holds a reference to one PIXI.Text element, and pieces of the text that can be translated separately. 
+ */
 class TextTracker {
 
     text_key = null; //text with numbers, prefix & postfix replaced
@@ -1057,6 +1098,9 @@ class TextTracker {
     }
 }
 
+/**
+ * Simply holds one piece of text that may be combined with others.
+ */
 class TextPiece {
     constructor(text) {
         this.text = text;
@@ -1066,6 +1110,9 @@ class TextPiece {
     }
 }
 
+/**
+ * A structure representing the direction of a translation. ("ja->en")
+ */
 class TranslationCode {
     constructor(source,target) {
         this.source = source;
@@ -1091,6 +1138,9 @@ class TranslationCode {
     }
 }
 
+/**
+ * A map for strings from one language to another. Strings are be separated by types.
+ */
 class LanguageMap {
     constructor() {
         this.maps = {};
@@ -1181,6 +1231,10 @@ class LanguageMap {
         return count;
     }
 }
+
+/**
+ * An object that manages mappings for multiple languages.
+ */
 class TranslationMapper {
     constructor() {
         this.maps = {};
@@ -1295,6 +1349,7 @@ waitForFunction("keyDownHandler", function(originalFn) {
     });
 })
 
+//listen for the PIXI.Text function so we can override it
 waitForFunction(['PIXI','Text'], function(originalFn) {
 
     unsafeWindow.PIXI.Text = new Proxy(originalFn, {
@@ -1303,13 +1358,15 @@ waitForFunction(['PIXI','Text'], function(originalFn) {
             //create the PIXI.Text
             let elem = Reflect.construct(target, args, newTarget);
 
-            //check context of call
+            //get context of call (funny trick)
             let _tempobj = {};
             Error.captureStackTrace(_tempobj);
             let stack = _tempobj.stack;
-            //remove unnecessary text from stack trace
+            //remove unnecessary text from stack trace, since some of them are really long
             //removes (lines ending with a url, or "construct@") and (the rest of the string, if it begins with one of the things below)
             stack = stack.replaceAll( /(@https:\/\/|construct@).*$|(interval|setTimeout|setInterval|_emscripten|r\.prototype|event_|C\<\/)[\s\S]*$/gm, "" );
+
+            //set a text type based on the calling context
             let text_type = textTypeDefault;
             //buttons are misc
             if (stack.includes("Artifact$ButtonArtifact")) {
@@ -1363,10 +1420,11 @@ waitForFunction(['PIXI','Text'], function(originalFn) {
                 text_type = TextTypes.PLAYERDATA;
             }
 
+            //begin tracking this text element
             let elem_tracker = new TextTracker(elem,stack,text_type);
+            elem._text_tracker = elem_tracker;
             text_elements.push(elem_tracker);
             trs_check_element(elem_tracker);
-            elem._text_tracker = elem_tracker;
 
             if (global_config.log_context && !stack.includes("TextTimerCounter") && (!global_config.log_exclude_names || !stack.includes("NameLabel")) ) {
                 //text, original text, context
@@ -1375,7 +1433,9 @@ waitForFunction(['PIXI','Text'], function(originalFn) {
 
             //new proxy so we can listen to text changes
             return new Proxy(elem, {
-                /*get(target, prop, receiver) {
+                /*
+                //(test) estimate size of english text
+                get(target, prop, receiver) {
                     let val = target[prop];
 
                     if (prop === "width") {
@@ -1389,6 +1449,8 @@ waitForFunction(['PIXI','Text'], function(originalFn) {
                 },*/
                 set(target, prop, value) {
                     target[prop] = value;
+                    //Listen for the text value being changed, so we can translate it ASAP.
+                    //Most of the time, the game creates a blank PIXI.Text and then sets the text value.
                     if (prop === "text") {
                         if ( global_config.log_context && !stack.includes("TextTimerCounter") && (!global_config.log_exclude_names || !stack.includes("NameLabel")) ) {
                             trs_log(`set text to ${value}\nContext:\n${target._text_tracker.context_stack}`);
