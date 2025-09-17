@@ -28,6 +28,8 @@ A Tampermonkey userscript that translates Japanese text inside the game Puppet G
 - As you play, the script will cache more text that you see. Some text is temporary, like chat messages. There is a chance that it will start to slow down after like months of doing quests, but I haven't noticed a problem so far. ¯\\\_(ツ)\_/¯
 - There are likely multiple duplicate translations that I didn't account for. For example, "bring me the [item name]" would be translated multiple times for different items. I've handled a few important ones, like "[item name] Synthesis list", and "Obtained [item name] from [monster]".
 - I'm not currently testing this script with Magical Rooms, but you can try out it by editing the script in Tampermonkey, and adding the Magical Rooms URL on a line at the top, like how the Puppet Guardian URL is.
+- You can check the browser's log `Ctrl+Shift+I` to see all new text that is translated.
+<img width="300" alt="log" src="https://github.com/user-attachments/assets/bd43fa6b-2fb3-4a77-9636-24bb8afc8ba2" />
 
 
 If you find a bug or a weird broken translation, submit a Github Issue!
