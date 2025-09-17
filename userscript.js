@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Puppet Guardian Translator
 // @namespace    http://tampermonkey.net/
-// @version      2025-09-14
+// @version      2025-09-17
 // @description  Translates text inside the game Puppet Guardian
 // @author       Antidissmist
 // @homepage     https://github.com/Antidissmist/Puppet-Guardian-Translator
