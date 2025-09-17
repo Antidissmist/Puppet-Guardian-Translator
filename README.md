@@ -2,13 +2,13 @@
 
 A Tampermonkey userscript that translates Japanese text inside the game Puppet Guardian!
 
-(this guide is a work in progress, since I have to make it public on Github in order to test it out :P)
-
 ## Features
 - Automatically finds Japanese text and quickly translates it into English as you play!
 - Caches important text and item names, so most text you've seen before will be seamlessly replaced.
-<img width="210" height="163" alt="inspect1" src="https://github.com/user-attachments/assets/843c2b27-46f5-4bcc-8d4c-ae38d73418bc" />
 
+<img width="400" alt="warehouse" src="https://github.com/user-attachments/assets/81eec75b-456b-47f9-ae12-8ffdd07de202" />
+
+<img width="393" alt="bottombar" src="https://github.com/user-attachments/assets/2850629d-9e5c-45ac-87c9-86dca492f5fe" />
 
 - Buttons to translate English text into Japanese, for the chat and other text inputs.
 <img width="552" height="64" alt="chat1" src="https://github.com/user-attachments/assets/9658faa3-e103-4872-85d1-efed71c2f2c1" />
@@ -28,6 +28,8 @@ A Tampermonkey userscript that translates Japanese text inside the game Puppet G
 - As you play, the script will cache more text that you see. Some text is temporary, like chat messages. There is a chance that it will start to slow down after like months of doing quests, but I haven't noticed a problem so far. ¯\\\_(ツ)\_/¯
 - There are likely multiple duplicate translations that I didn't account for. For example, "bring me the [item name]" would be translated multiple times for different items. I've handled a few important ones, like "[item name] Synthesis list", and "Obtained [item name] from [monster]".
 - I'm not currently testing this script with Magical Rooms, but you can try out it by editing the script in Tampermonkey, and adding the Magical Rooms URL on a line at the top, like how the Puppet Guardian URL is.
+- You can check the browser's log `Ctrl+Shift+I` to see all new text that is translated.
+<img width="300" alt="log" src="https://github.com/user-attachments/assets/bd43fa6b-2fb3-4a77-9636-24bb8afc8ba2" />
 
 
 If you find a bug or a weird broken translation, submit a Github Issue!
